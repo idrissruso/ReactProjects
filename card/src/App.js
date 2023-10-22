@@ -1,88 +1,90 @@
 import './App.css'
+import { useState } from 'react'
 
-const skills = [
-  {
-    skill: 'HTML+CSS',
-    level: 'advanced',
-    color: '#2662EA',
-  },
-  {
-    skill: 'JavaScript',
-    level: 'advanced',
-    color: '#EFD81D',
-  },
-  {
-    skill: 'Web Design',
-    level: 'advanced',
-    color: '#C3DCAF',
-  },
-  {
-    skill: 'Git and GitHub',
-    level: 'intermediate',
-    color: '#E84F33',
-  },
-  {
-    skill: 'React',
-    level: 'advanced',
-    color: '#60DAFB',
-  },
-  {
-    skill: 'Svelte',
-    level: 'beginner',
-    color: '#FF3B00',
-  },
-]
+export default function App() {
+  const [bill, setBill] = useState(0)
+  const [service, setService] = useState(1)
+  const [friend, setFriend] = useState()
 
-function App() {
-  return <Card />
-}
+  function handleBill(e) {
+    setBill(e.target.value)
+  }
 
-function Card() {
-  return (
-    <div className="card">
-      <Avatar />
-      <Description />
-    </div>
-  )
-}
+  function handleService(e) {
+    setService(e.target.value)
+  }
 
-function Avatar() {
-  return <img src="img.jpg" alt="avatar" />
-}
+  function handleFriend(e) {
+    setFriend(e.target.value)
+  }
 
-function Description() {
+  let tip = bill * (service / 100) + bill * (friend / 100)
+
   return (
     <div>
-      <h1>Idrissa Rusongeka</h1>
-      <p>
-        1500'lerden beri kullanılmakta olan standard Lorem Ipsum metinleri
-        ilgilenenler için yeniden üretilmiştir. Çiçero tarafından yazılan
-        1.10.32 ve 1.10.33 bölümleri de 1914 H. Rackham çevirisinden alınan
-        İngilizce sürümleri eşliğinde özgün biçiminden yeniden üretilmiştir.
-      </p>
-      <div className="skils">
-        {skills.map((skil) => (
-          <Skil
-            key={skil.skill}
-            name={skil.skill}
-            color={skil.color}
-            level={skil.level}
-          />
-        ))}
-      </div>
-      <div className="skils"></div>
+      <Bill bill={bill} onBillChange={handleBill} />
+      <MFeedback service={service} onServiceChange={handleService} />
+      <FFeedBack friend={friend} onFriendChange={handleFriend} />
+      <Result bill={bill} tip={tip} />
+      <button
+        onClick={() => {
+          setBill(0)
+          setService(0)
+          setFriend(0)
+        }}
+      >
+        Reset
+      </button>
     </div>
   )
 }
 
-function Skil({ name, color, level }) {
+function Bill({ bill, onBillChange }) {
   return (
-    <div className="skil" style={{ backgroundColor: color }}>
-      {`${name} - ${
-        level === 'advanced' ? '🫡' : level === 'intermediate' ? '😉' : '🥲'
-      }`}
+    <div>
+      <label>How Much was the bill?</label>
+      <input type="text" onChange={(e) => onBillChange(e)} value={bill} />
     </div>
   )
 }
 
-export default App
+function MFeedback({ service, onServiceChange }) {
+  return (
+    <div>
+      <label>How was the service?</label>
+      <select onChange={(e) => onServiceChange(e)} value={service}>
+        <option value="1">very bad (0%)</option>
+        <option value="2">it was ok (5%)</option>
+        <option value="3">it was good (10%)</option>
+      </select>
+    </div>
+  )
+}
+
+function FFeedBack({ friend, onFriendChange }) {
+  return (
+    <div>
+      <label>How did your friend like the service?</label>
+      <select
+        value={friend}
+        onChange={(e) => {
+          onFriendChange(e)
+        }}
+      >
+        <option value="1">very bad (0%)</option>
+        <option value="2">it was ok (5%)</option>
+        <option value="3">it was good (10%)</option>
+      </select>
+    </div>
+  )
+}
+
+function Result({ bill, tip }) {
+  return (
+    <div>
+      <p>You pay {`$${bill}.0`}</p>
+      <p>Tip amount: {`$${tip}`}</p>
+      <p>Total: {bill + tip}</p>
+    </div>
+  )
+}
