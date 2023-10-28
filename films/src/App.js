@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import StarRating from './ratingStar'
 
 const KEY = '1459fadd'
 
@@ -85,11 +86,15 @@ function Navbar({ children }) {
   return <nav className="nav-bar">{children}</nav>
 }
 
-function MoviesList({ movies }) {
+function MoviesList({ movies, handleSelectedMovie }) {
   return (
-    <ul className="list">
+    <ul className="list list-movies">
       {movies?.map((movie) => (
-        <Movie movie={movie} key={movie.imdbID} />
+        <Movie
+          movie={movie}
+          key={movie.imdbID}
+          handleSelectedMovie={handleSelectedMovie}
+        />
       ))}
     </ul>
   )
@@ -110,9 +115,9 @@ function Box({ children }) {
   )
 }
 
-function Movie({ movie }) {
+function Movie({ movie, handleSelectedMovie }) {
   return (
-    <li key={movie.imdbID}>
+    <li key={movie.imdbID} onClick={() => handleSelectedMovie(movie.imdbID)}>
       <img src={movie.Poster} alt={`${movie.Title} poster`} />
       <h3>{movie.Title}</h3>
       <div>
@@ -205,6 +210,15 @@ export default function App() {
   const [movies, setMovies] = useState(tempMovieData)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [selectedMovie, setSelectedMovie] = useState(null)
+
+  function handleSelectedMovie(id) {
+    setSelectedMovie(selectedMovie === id ? null : id)
+  }
+
+  function handleGoBack() {
+    setSelectedMovie(null)
+  }
 
   useEffect(() => {
     async function fetchMovies() {
@@ -228,7 +242,7 @@ export default function App() {
       setLoading(false)
     }
 
-    if (query.length > !2) {
+    if (query.length < 3) {
       setMovies([])
       setError('')
       return
@@ -251,11 +265,19 @@ export default function App() {
           ) : error ? (
             <Error message={error} />
           ) : (
-            <MoviesList movies={movies} />
+            <MoviesList
+              movies={movies}
+              selectedMovie={selectedMovie}
+              handleSelectedMovie={handleSelectedMovie}
+            />
           )}
         </Box>
         <Box>
-          <WatchedMoviesList movies={movies} />
+          {selectedMovie ? (
+            <SelectedMovie imdbID={selectedMovie} handleGoBack={handleGoBack} />
+          ) : (
+            <WatchedMoviesList movies={movies} selectedMovie={selectedMovie} />
+          )}
         </Box>
       </Main>
     </>
@@ -274,6 +296,87 @@ function Error({ message }) {
   return (
     <div className="error">
       <h2>{message}</h2>
+    </div>
+  )
+}
+
+function SelectedMovie({ imdbID, handleGoBack }) {
+  const [movie, setMovie] = useState(null)
+  const [loading, setLoading] = useState(false)
+
+  const {
+    Title: title,
+    Year: year,
+    Poster: poster,
+    Runtime: runtime,
+    imdbRating,
+    Plot: plot,
+    Released: released,
+    Actors: actors,
+    Director: director,
+    Genre: genre,
+  } = movie || {}
+
+  useEffect(() => {
+    async function fetchMovie() {
+      setLoading(true)
+      try {
+        const res = await fetch(
+          `https://www.omdbapi.com/?apikey=${KEY}&i=${imdbID}`
+        )
+        const data = await res.json()
+        console.log(data)
+        setMovie(data)
+      } catch (err) {
+        console.error(err)
+      }
+      setLoading(false)
+    }
+
+    fetchMovie()
+  }, [imdbID])
+
+  return (
+    <div className="details">
+      {loading ? (
+        <Loading />
+      ) : (
+        <>
+          <header>
+            <button className="btn-back" onClick={handleGoBack}>
+              &larr;
+            </button>
+            <img src={poster} alt={`Poster of ${movie} movie`} />
+            <div className="details-overview">
+              <h2>{title}</h2>
+              <p>
+                {released} &bull; {runtime}
+              </p>
+              <p>{genre}</p>
+              <p>
+                <span>⭐️</span>
+                {imdbRating} IMDb rating
+              </p>
+            </div>
+          </header>
+          <section>
+            <div className="rating">
+              <StarRating
+                maxRating={10}
+                size={24}
+                onSetRating={() => {
+                  console.log('merhaba')
+                }}
+              />
+            </div>
+            <p>
+              <em>{plot}</em>
+            </p>
+            <p>Starring {actors}</p>
+            <p>Directed by {director}</p>
+          </section>
+        </>
+      )}
     </div>
   )
 }
