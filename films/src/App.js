@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+
+const KEY = '1459fadd'
 
 const tempMovieData = [
   {
@@ -47,8 +49,7 @@ const tempWatchedData = [
   },
 ]
 
-function Search() {
-  const [query, setQuery] = useState('')
+function Search({ query, setQuery }) {
   return (
     <input
       className="search"
@@ -88,7 +89,7 @@ function MoviesList({ movies }) {
   return (
     <ul className="list">
       {movies?.map((movie) => (
-        <Movie movie={movie} />
+        <Movie movie={movie} key={movie.imdbID} />
       ))}
     </ul>
   )
@@ -132,7 +133,7 @@ function WatchedMoviesList({ movies }) {
       <MovieToWatchStats watched={tempWatchedData} />
       <ul className="list">
         {watched.map((movie) => (
-          <MovieDetails movie={movie} />
+          <MovieDetails movie={movie} key={movie.Title} />
         ))}
       </ul>
     </>
@@ -200,23 +201,79 @@ function Main({ children }) {
 }
 
 export default function App() {
+  const [query, setQuery] = useState('')
   const [movies, setMovies] = useState(tempMovieData)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    async function fetchMovies() {
+      setLoading(true)
+      setError('')
+      try {
+        const res = await fetch(
+          `https://www.omdbapi.com/?apikey=${KEY}&s=${query}`
+        )
+        const data = await res.json()
+        if (data.Response === 'False') {
+          setError(data.Error)
+          setMovies([])
+        } else {
+          setError('')
+          setMovies(data.Search)
+        }
+      } catch (err) {
+        setError(err.message)
+      }
+      setLoading(false)
+    }
+
+    if (query.length > !2) {
+      setMovies([])
+      setError('')
+      return
+    }
+
+    fetchMovies()
+  }, [query])
 
   return (
     <>
       <Navbar>
         <Logo />
-        <Search />
+        <Search query={query} setQuery={setQuery} />
         <Results movies={movies} />
       </Navbar>
       <Main>
         <Box>
-          <MoviesList movies={movies} />
+          {loading ? (
+            <Loading />
+          ) : error ? (
+            <Error message={error} />
+          ) : (
+            <MoviesList movies={movies} />
+          )}
         </Box>
         <Box>
           <WatchedMoviesList movies={movies} />
         </Box>
       </Main>
     </>
+  )
+}
+
+function Loading() {
+  return (
+    <div className="loader">
+      <h2>Loading...</h2>
+    </div>
+  )
+}
+
+function Error({ message }) {
+  return (
+    <div className="error">
+      <h2>{message}</h2>
+    </div>
   )
 }
