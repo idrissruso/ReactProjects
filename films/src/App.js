@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import StarRating from './ratingStar'
+import { useFetch } from './useFetch'
 
 const KEY = '1459fadd'
 
@@ -207,10 +208,8 @@ function Main({ children }) {
 
 export default function App() {
   const [query, setQuery] = useState('')
-  const [movies, setMovies] = useState(tempMovieData)
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
   const [selectedMovie, setSelectedMovie] = useState(null)
+  const { movies, error, loading } = useFetch(query)
 
   function handleSelectedMovie(id) {
     setSelectedMovie(selectedMovie === id ? null : id)
@@ -219,37 +218,6 @@ export default function App() {
   function handleGoBack() {
     setSelectedMovie(null)
   }
-
-  useEffect(() => {
-    async function fetchMovies() {
-      setLoading(true)
-      setError('')
-      try {
-        const res = await fetch(
-          `https://www.omdbapi.com/?apikey=${KEY}&s=${query}`
-        )
-        const data = await res.json()
-        if (data.Response === 'False') {
-          setError(data.Error)
-          setMovies([])
-        } else {
-          setError('')
-          setMovies(data.Search)
-        }
-      } catch (err) {
-        setError(err.message)
-      }
-      setLoading(false)
-    }
-
-    if (query.length < 3) {
-      setMovies([])
-      setError('')
-      return
-    }
-
-    fetchMovies()
-  }, [query])
 
   return (
     <>
@@ -335,6 +303,16 @@ function SelectedMovie({ imdbID, handleGoBack }) {
 
     fetchMovie()
   }, [imdbID])
+
+  useEffect(() => {
+    document.title = title ? `${title} | usePopcorn` : 'usePopcorn'
+  }, [title])
+
+  useEffect(() => {
+    return () => {
+      document.title = 'usePopcorn'
+    }
+  }, [])
 
   return (
     <div className="details">
