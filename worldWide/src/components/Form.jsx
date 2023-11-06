@@ -3,7 +3,7 @@
 import Button from './Button'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-
+import ButtonBack from './ButtonBack'
 import styles from './Form.module.css'
 
 export function convertToEmoji(countryCode) {
@@ -54,14 +54,7 @@ function Form() {
 
       <div className={styles.buttons}>
         <Button type="primary">Cancel</Button>
-        <Button
-          type="back"
-          onClick={(e) => {
-            e.preventDefault()
-          }}
-        >
-          &larr; Back
-        </Button>
+        <ButtonBack />
       </div>
     </form>
   )
