@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
 
-function LinkButton({ children, disabled, to, type }) {
+function Button({ children, disabled, to, type, onClick }) {
   const base =
-    "inline-block rounded-full bg-yellow-500 font-semibold uppercase tracking-wider text-stone-800 transition-colors duration-200 hover:bg-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 focus:ring-offset-yellow-100 disabled:cursor-not-allowed ";
+    "inline-block rounded-full bg-yellow-500 font-semibold uppercase tracking-wider text-stone-800 transition-colors duration-200 hover:bg-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 focus:ring-offset-yellow-100 disabled:cursor-not-allowed";
 
   const styles = {
     primary: base + " px-4 py-3 md:py-4 md:px-6 text-sm",
@@ -18,6 +18,14 @@ function LinkButton({ children, disabled, to, type }) {
       </Link>
     );
 
+  if (onClick) {
+    return (
+      <button disabled={disabled} className={styles[type]} onClick={onClick}>
+        {children}
+      </button>
+    );
+  }
+
   return (
     <button disabled={disabled} className={styles[type]}>
       {children}
@@ -25,4 +33,4 @@ function LinkButton({ children, disabled, to, type }) {
   );
 }
 
-export default LinkButton;
+export default Button;
