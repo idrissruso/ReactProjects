@@ -5,6 +5,7 @@ import { addItem } from "../cart/cartSlice";
 import { useSelector } from "react-redux";
 import { getPizzaQuantity } from "../cart/cartSlice";
 import DeleteItemBtn from "../../ui/DeleteItemBtn";
+import QuantityBtns from "../../ui/QuantityBtns";
 
 function MenuItem({ pizza }) {
   const { id, name, unitPrice, ingredients, soldOut, imageUrl } = pizza;
@@ -42,7 +43,10 @@ function MenuItem({ pizza }) {
           )}
 
           {quantity > 0 ? (
-            <DeleteItemBtn pizzaId={id} />
+            <div className="flex gap-3">
+              <QuantityBtns quantity={quantity} pizzaId={id} />
+              <DeleteItemBtn pizzaId={id} />
+            </div>
           ) : (
             !soldOut && (
               <Button type="small" onClick={handleAddToCart}>
